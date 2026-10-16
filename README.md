@@ -1,4 +1,4 @@
-# text-search
+# @jaguilar0925/text-search
 
 Dependency-free find/replace for plain text, written in TypeScript.
 
@@ -9,7 +9,7 @@ Dependency-free find/replace for plain text, written in TypeScript.
 - Zero-width matches (`\b`, lookaheads) cannot hang the search
 
 ```ts
-import { findMatches, replaceText } from 'text-search'
+import { findMatches, replaceText } from '@jaguilar0925/text-search'
 
 findMatches('Foo foo', 'foo', { isCaseSensitive: true })
 // [{ start: 4, end: 7, match: 'foo', subMatches: [] }]

@@ -1,5 +1,5 @@
 {
-  "name": "text-search",
+  "name": "@jaguilar0925/text-search",
   "version": "0.1.0",
   "description": "Dependency-free find/replace for plain text: case, whole word, regexp, VS Code style $n replacements, grapheme-safe matches.",
   "type": "module",
