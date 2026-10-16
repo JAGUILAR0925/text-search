@@ -1,0 +1,19 @@
+{
+  "name": "text-search",
+  "version": "0.1.0",
+  "description": "Dependency-free find/replace for plain text: case, whole word, regexp, VS Code style $n replacements, grapheme-safe matches.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "LICENSE", "NOTICE"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "5.6.3",
+    "vitest": "2.1.8"
+  }
+}

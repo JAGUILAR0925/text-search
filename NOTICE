@@ -1,0 +1,6 @@
+The matching and replacement logic in src/ is adapted from MarkText
+(https://github.com/marktext/marktext), packages/muya/src/utils/search.ts and
+packages/muya/src/search/index.ts, MIT License:
+Copyright (c) 2017-present Luo Ran
+Copyright (c) 2018-present MarkText Contributors
+The full license text is in LICENSE.
