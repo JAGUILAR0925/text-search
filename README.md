@@ -18,6 +18,20 @@ replaceText('x1', '([a-z])(\\d)', '$2$1', { isRegexp: true }) // '1x'
 replaceText('a a a', 'a', 'b', { only: 1 })                   // 'a b a'
 ```
 
+## Demo
+
+`docs/index.html` is a static demo page that uses the compiled library from
+`docs/lib/`. Run it locally:
+
+```bash
+npm install
+npm run demo          # builds the library and refreshes docs/lib
+npx http-server docs  # or: python3 -m http.server -d docs
+```
+
+With GitHub Pages set to deploy from the `master` branch and the `/docs`
+folder, the demo is served at https://jaguilar0925.github.io/text-search/.
+
 ## Develop
 
 ```bash

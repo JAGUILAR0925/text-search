@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>text-search demo</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #fff; --text: #1d1d1b; --muted: #6a6a64; --line: #dcdcd4;
+    --accent: #2f5fd0; --accent-text: #fff; --mark: #ffe58a; --mark-active: #ff9d3d; --danger: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151515; --panel: #1f1f1e; --text: #ececE6; --muted: #9a9a92; --line: #3a3a36;
+      --accent: #7ea2ff; --accent-text: #0d1630; --mark: #5c4a00; --mark-active: #b45f06; --danger: #ff8a80;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  p.lead { margin: 0 0 20px; color: var(--muted); }
+  p.lead a { color: var(--accent); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  label.field { display: block; font-size: .85rem; color: var(--muted); margin-bottom: 4px; }
+  textarea, input[type=text] {
+    width: 100%; font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+  }
+  textarea { min-height: 120px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .opts { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 4px 0 12px; }
+  .opts label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button {
+    font: inherit; cursor: pointer; color: var(--text); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+  }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #status { margin-left: auto; font-size: .9rem; color: var(--muted); }
+  #status.warn { color: var(--danger); }
+  #preview { white-space: pre-wrap; word-break: break-word; min-height: 3em; }
+  mark { background: var(--mark); color: inherit; border-radius: 3px; padding: 0 1px; }
+  mark.active { background: var(--mark-active); }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; }
+  h2 { font-size: 1rem; margin: 0 0 8px; }
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr; } #status { margin-left: 0; width: 100%; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>text-search</h1>
+  <p class="lead">Buscar y reemplazar en texto plano: mayúsculas, palabra completa, regex, <code>$n</code> y emojis seguros.
+    <a href="https://github.com/JAGUILAR0925/text-search">Código en GitHub</a></p>
+
+  <section class="panel" aria-label="Ejemplos">
+    <h2>Ejemplos</h2>
+    <div class="examples" id="examples"></div>
+  </section>
+
+  <section class="panel">
+    <label class="field" for="text">Texto</label>
+    <textarea id="text" spellcheck="false"></textarea>
+
+    <div class="row">
+      <div><label class="field" for="query">Buscar</label><input type="text" id="query" autocomplete="off" spellcheck="false"></div>
+      <div><label class="field" for="replacement">Reemplazar con</label><input type="text" id="replacement" autocomplete="off" spellcheck="false"></div>
+    </div>
+
+    <div class="opts">
+      <label><input type="checkbox" id="isCaseSensitive"> Distinguir mayúsculas</label>
+      <label><input type="checkbox" id="isWholeWord"> Palabra completa</label>
+      <label><input type="checkbox" id="isRegexp"> Expresión regular</label>
+    </div>
+
+    <div class="actions">
+      <button id="prev" type="button">← Anterior</button>
+      <button id="next" type="button">Siguiente →</button>
+      <button id="replaceOne" type="button">Reemplazar actual</button>
+      <button id="replaceAll" type="button" class="primary">Reemplazar todo</button>
+      <span id="status" role="status" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Resultado</h2>
+    <div id="preview" aria-label="Texto con coincidencias resaltadas"></div>
+  </section>
+</main>
+
+<script type="module">
+import { findMatches, replaceText } from './lib/index.js'
+
+const $ = id => document.getElementById(id)
+const els = {
+  text: $('text'), query: $('query'), replacement: $('replacement'),
+  isCaseSensitive: $('isCaseSensitive'), isWholeWord: $('isWholeWord'), isRegexp: $('isRegexp'),
+  prev: $('prev'), next: $('next'), replaceOne: $('replaceOne'), replaceAll: $('replaceAll'),
+  status: $('status'), preview: $('preview'),
+}
+
+const EXAMPLES = [
+  { name: 'Básico', text: 'Foo foo FOO fOo', query: 'foo', replacement: 'bar', opts: {} },
+  { name: 'Palabra completa', text: 'cat concat cat. category cat!', query: 'cat', replacement: 'gato', opts: { isWholeWord: true } },
+  { name: 'Regex con $n', text: 'Juan Pérez\nAna García\nLuis Gómez', query: '(\\p{L}+) (\\p{L}+)', replacement: '$2, $1', opts: { isRegexp: true } },
+  { name: 'Emojis (grafemas)', text: 'Familia 👨‍👩‍👧 y 👨 solo.\né (e + acento combinado)', query: '👨', replacement: 'X', opts: {} },
+  { name: 'Regex y emoji', text: 'a👨‍👩‍👧b', query: '.', replacement: '·', opts: { isRegexp: true } },
+]
+
+let active = 0
+
+const options = () => ({
+  isCaseSensitive: els.isCaseSensitive.checked,
+  isWholeWord: els.isWholeWord.checked,
+  isRegexp: els.isRegexp.checked,
+})
+
+function regexpError() {
+  if (!els.isRegexp.checked || !els.query.value) return false
+  for (const flags of ['u', '']) {
+    try { new RegExp(els.query.value, flags); return false } catch { /* try next */ }
+  }
+  return true
+}
+
+function render() {
+  const text = els.text.value
+  const query = els.query.value
+  const matches = query ? findMatches(text, query, options()) : []
+  if (active >= matches.length) active = Math.max(0, matches.length - 1)
+
+  els.preview.replaceChildren()
+  let last = 0
+  matches.forEach((m, i) => {
+    if (m.start === m.end) return
+    els.preview.append(text.slice(last, m.start))
+    const mark = document.createElement('mark')
+    mark.textContent = m.match
+    if (i === active) {
+      mark.className = 'active'
+      mark.id = 'active-match'
+    }
+    els.preview.append(mark)
+    last = m.end
+  })
+  els.preview.append(text.slice(last))
+
+  const invalid = regexpError()
+  els.status.classList.toggle('warn', invalid)
+  els.status.textContent = invalid
+    ? 'Expresión regular no válida'
+    : !query ? ''
+    : matches.length === 0 ? 'Sin coincidencias'
+    : `${active + 1} de ${matches.length}`
+
+  const none = matches.length === 0
+  for (const b of [els.prev, els.next, els.replaceOne, els.replaceAll]) b.disabled = none
+  document.getElementById('active-match')?.scrollIntoView({ block: 'nearest' })
+  return matches
+}
+
+function step(delta) {
+  const n = findMatches(els.text.value, els.query.value, options()).length
+  if (!n) return
+  active = (active + delta + n) % n
+  render()
+}
+
+els.prev.onclick = () => step(-1)
+els.next.onclick = () => step(1)
+els.replaceOne.onclick = () => {
+  els.text.value = replaceText(els.text.value, els.query.value, els.replacement.value, { ...options(), only: active })
+  render()
+}
+els.replaceAll.onclick = () => {
+  els.text.value = replaceText(els.text.value, els.query.value, els.replacement.value, options())
+  active = 0
+  render()
+}
+
+for (const el of [els.text, els.query, els.isCaseSensitive, els.isWholeWord, els.isRegexp])
+  el.addEventListener('input', () => { active = 0; render() })
+
+function load(ex) {
+  els.text.value = ex.text
+  els.query.value = ex.query
+  els.replacement.value = ex.replacement
+  els.isCaseSensitive.checked = !!ex.opts.isCaseSensitive
+  els.isWholeWord.checked = !!ex.opts.isWholeWord
+  els.isRegexp.checked = !!ex.opts.isRegexp
+  active = 0
+  render()
+}
+
+for (const ex of EXAMPLES) {
+  const b = document.createElement('button')
+  b.type = 'button'
+  b.textContent = ex.name
+  b.onclick = () => load(ex)
+  $('examples').append(b)
+}
+
+load(EXAMPLES[0])
+</script>
+</body>
+</html>
