@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { expandReplacement, findMatches, replaceText } from '../src'
+import { expandReplacement, findMatches, replaceText } from '../src/index.js'
 
 const spans = (t: string, q: string, o = {}) => findMatches(t, q, o).map(m => [m.start, m.end])
 

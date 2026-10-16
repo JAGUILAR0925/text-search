@@ -1,5 +1,5 @@
-import type { Match, SearchOptions } from './types'
-import { graphemeClusters } from './graphemes'
+import type { Match, SearchOptions } from './types.js'
+import { graphemeClusters } from './graphemes.js'
 
 const SPECIAL_CHAR_REG = /[[\]\\^$.|?*+(){}/]/g
 
