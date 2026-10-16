@@ -2,10 +2,32 @@
   "name": "@jaguilar0925/text-search",
   "version": "0.1.0",
   "description": "Dependency-free find/replace for plain text: case, whole word, regexp, VS Code style $n replacements, grapheme-safe matches.",
+  "keywords": [
+    "search",
+    "replace",
+    "find",
+    "regexp",
+    "unicode",
+    "grapheme",
+    "text"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JAGUILAR0925/text-search.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JAGUILAR0925/text-search/issues"
+  },
+  "homepage": "https://github.com/JAGUILAR0925/text-search#readme",
+  "author": "JAGUILAR0925",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "LICENSE", "NOTICE"],
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
